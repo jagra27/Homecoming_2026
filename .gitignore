@@ -1,0 +1,10 @@
+# macOS metadata
+._*
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# macOS filesystem metadata directories
+.Spotlight-V100/
+.Trashes/
+.fseventsd/
