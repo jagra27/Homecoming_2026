@@ -6,18 +6,23 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "worker:login": "wrangler login",
+    "worker:create-buckets": "wrangler r2 bucket create homecoming-2026-card-previews && wrangler r2 bucket create homecoming-2026-card-previews-preview",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy"
   },
   "dependencies": {
     "@fontsource/anton": "^5.1.1",
     "@fontsource/arimo": "^5.1.1",
-    "gifenc": "^1.0.3",
     "lucide-react": "^0.468.0",
+    "mediabunny": "^1.55.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^6.1.0"
+    "vite": "^6.1.0",
+    "wrangler": "^4.86.0"
   }
 }

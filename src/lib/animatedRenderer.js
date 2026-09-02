@@ -1,16 +1,24 @@
-import { applyPalette, GIFEncoder, quantize } from 'gifenc'
+import {
+  BufferTarget,
+  canEncodeVideo,
+  CanvasSource,
+  Mp4OutputFormat,
+  Output,
+  Quality,
+} from 'mediabunny'
 import { CARD_HEIGHT, CARD_WIDTH, renderCard } from './cardRenderer'
 
-const ANIMATION_WIDTH = CARD_WIDTH / 4
-const ANIMATION_HEIGHT = CARD_HEIGHT / 4
-const FRAME_COUNT = 12
-const FRAME_DELAY = 160
+const VIDEO_WIDTH = CARD_WIDTH / 4
+const VIDEO_HEIGHT = CARD_HEIGHT / 4
+const VIDEO_DURATION = 8
+const FRAME_RATE = 15
 
 function drawFoilSweep(context, progress) {
-  const sweepX = -ANIMATION_WIDTH * 0.55 + progress * ANIMATION_WIDTH * 2.1
+  const loopProgress = (progress * 2) % 1
+  const sweepX = -VIDEO_WIDTH * 0.55 + loopProgress * VIDEO_WIDTH * 2.1
   const gradient = context.createLinearGradient(
     sweepX - 260,
-    ANIMATION_HEIGHT,
+    VIDEO_HEIGHT,
     sweepX + 260,
     0,
   )
@@ -23,37 +31,51 @@ function drawFoilSweep(context, progress) {
   context.save()
   context.globalCompositeOperation = 'screen'
   context.fillStyle = gradient
-  context.fillRect(0, 0, ANIMATION_WIDTH, ANIMATION_HEIGHT)
+  context.fillRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT)
   context.restore()
 }
 
 export async function renderAnimatedCard(options, onProgress) {
-  const baseCanvas = document.createElement('canvas')
-  const frameCanvas = document.createElement('canvas')
-  baseCanvas.width = frameCanvas.width = ANIMATION_WIDTH
-  baseCanvas.height = frameCanvas.height = ANIMATION_HEIGHT
-  await renderCard(baseCanvas, options)
-
-  const context = frameCanvas.getContext('2d', { willReadFrequently: true })
-  const gif = GIFEncoder()
-
-  for (let frame = 0; frame < FRAME_COUNT; frame += 1) {
-    context.clearRect(0, 0, ANIMATION_WIDTH, ANIMATION_HEIGHT)
-    context.drawImage(baseCanvas, 0, 0)
-    drawFoilSweep(context, frame / (FRAME_COUNT - 1))
-
-    const { data } = context.getImageData(0, 0, ANIMATION_WIDTH, ANIMATION_HEIGHT)
-    const palette = quantize(data, 256, { format: 'rgb565' })
-    const index = applyPalette(data, palette, 'rgb565')
-    gif.writeFrame(index, ANIMATION_WIDTH, ANIMATION_HEIGHT, {
-      palette,
-      delay: FRAME_DELAY,
-      repeat: 0,
-    })
-    onProgress?.((frame + 1) / FRAME_COUNT)
-    await new Promise((resolve) => window.requestAnimationFrame(resolve))
+  const quality = new Quality('high')
+  const canEncodeH264 = await canEncodeVideo('avc', {
+    width: VIDEO_WIDTH,
+    height: VIDEO_HEIGHT,
+    quality,
+  })
+  if (!canEncodeH264) {
+    throw new Error('This browser cannot create an H.264 video')
   }
 
-  gif.finish()
-  return new Blob([gif.bytes()], { type: 'image/gif' })
+  const baseCanvas = document.createElement('canvas')
+  const frameCanvas = document.createElement('canvas')
+  baseCanvas.width = frameCanvas.width = VIDEO_WIDTH
+  baseCanvas.height = frameCanvas.height = VIDEO_HEIGHT
+  await renderCard(baseCanvas, options)
+
+  const context = frameCanvas.getContext('2d')
+  const target = new BufferTarget()
+  const output = new Output({ format: new Mp4OutputFormat(), target })
+  const videoSource = new CanvasSource(frameCanvas, {
+    codec: 'avc',
+    quality,
+    keyFrameInterval: 2,
+    hardwareAcceleration: 'prefer-hardware',
+  })
+  output.addVideoTrack(videoSource)
+  await output.start()
+
+  const frameCount = VIDEO_DURATION * FRAME_RATE
+  for (let frame = 0; frame < frameCount; frame += 1) {
+    context.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT)
+    context.drawImage(baseCanvas, 0, 0)
+    drawFoilSweep(context, frame / frameCount)
+    await videoSource.add(frame / FRAME_RATE, 1 / FRAME_RATE, {
+      keyFrame: frame % (FRAME_RATE * 2) === 0,
+    })
+    onProgress?.((frame + 1) / frameCount)
+  }
+
+  videoSource.close()
+  await output.finalize()
+  return new Blob([target.buffer], { type: 'video/mp4' })
 }

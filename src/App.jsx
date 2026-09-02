@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Send, Share2, Upload, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Download, Send, Share2, Upload, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import CardCanvas from './components/CardCanvas'
 import { schools } from './data/schools'
@@ -22,6 +22,16 @@ const initialCardDetails = {
 }
 
 const PUBLIC_APP_URL = 'https://jagra27.github.io/Homecoming_2026/'
+const SHARE_SERVICE_URL = import.meta.env.VITE_SHARE_API_URL?.replace(/\/$/, '')
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(blob)
+  })
+}
 
 function App() {
   const carouselRef = useRef(null)
@@ -40,6 +50,7 @@ function App() {
   const [resultArtifact, setResultArtifact] = useState(null)
   const [saveSurface, setSaveSurface] = useState(null)
   const [friendCardBlob, setFriendCardBlob] = useState(null)
+  const [friendPreviewBlob, setFriendPreviewBlob] = useState(null)
   const [shareStatus, setShareStatus] = useState('')
 
   const showSchool = (index) => {
@@ -128,7 +139,7 @@ function App() {
         if (cancelled) return
 
         const formatName = isAnimated ? 'animated-card' : isStory ? 'story' : 'card'
-        const extension = isAnimated ? 'gif' : 'png'
+        const extension = isAnimated ? 'mp4' : 'png'
         artifactUrl = URL.createObjectURL(blob)
         setResultArtifact({
           blob,
@@ -168,10 +179,19 @@ function App() {
         crop,
       })
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
-      if (!cancelled) setFriendCardBlob(blob)
+      const previewCanvas = document.createElement('canvas')
+      previewCanvas.width = CARD_WIDTH / 4
+      previewCanvas.height = CARD_HEIGHT / 4
+      previewCanvas.getContext('2d').drawImage(canvas, 0, 0, previewCanvas.width, previewCanvas.height)
+      const previewBlob = await new Promise((resolve) => previewCanvas.toBlob(resolve, 'image/png'))
+      if (!cancelled) {
+        setFriendCardBlob(blob)
+        setFriendPreviewBlob(previewBlob)
+      }
     }
 
     setFriendCardBlob(null)
+    setFriendPreviewBlob(null)
     prepareFriendCard().catch((error) => {
       if (!cancelled) console.error('Unable to prepare friend share card', error)
     })
@@ -226,7 +246,10 @@ function App() {
           title: `${selectedSchool.name} Homecoming 2026`,
         })
       } else {
-        setSaveSurface(resultArtifact)
+        const previewUrl = resultArtifact.blob.type.startsWith('image/')
+          ? await blobToDataUrl(resultArtifact.blob)
+          : resultArtifact.url
+        setSaveSurface({ ...resultArtifact, previewUrl })
       }
     } catch (error) {
       if (error.name === 'AbortError') return
@@ -246,14 +269,33 @@ function App() {
     )
 
     try {
+      let shareUrl = PUBLIC_APP_URL
+      if (SHARE_SERVICE_URL && friendPreviewBlob) {
+        setShareStatus('Preparing personalized invitation...')
+        try {
+          const formData = new FormData()
+          formData.append('image', friendPreviewBlob, 'card-preview.png')
+          formData.append('firstName', firstName)
+          const response = await fetch(`${SHARE_SERVICE_URL}/api/shares`, {
+            method: 'POST',
+            body: formData,
+          })
+          if (!response.ok) throw new Error('Unable to create personalized invitation')
+          const invitation = await response.json()
+          shareUrl = invitation.shareUrl
+        } catch (error) {
+          console.warn('Using the public invitation link', error)
+        }
+      }
+
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], text, url: PUBLIC_APP_URL })
+        await navigator.share({ files: [file], text, url: shareUrl })
         setShareStatus('Shared successfully.')
       } else if (navigator.share) {
-        await navigator.share({ text, url: PUBLIC_APP_URL })
-        setShareStatus('Link shared. Personalized image sharing requires the secure live site.')
+        await navigator.share({ text, url: shareUrl })
+        setShareStatus('Invitation shared.')
       } else {
-        await navigator.clipboard.writeText(`${text} ${PUBLIC_APP_URL}`)
+        await navigator.clipboard.writeText(`${text} ${shareUrl}`)
         setShareStatus('Invitation link copied.')
       }
     } catch (error) {
@@ -488,10 +530,14 @@ function App() {
             className={`result-preview${resultFormat === 'story' ? ' is-story' : ''}${resultFormat === 'animated' ? ' is-animated' : ''}`}
           >
             {resultFormat === 'animated' && resultArtifact?.format === 'animated' ? (
-              <img
+              <video
                 className="animated-artwork"
                 src={resultArtifact.url}
-                alt={`${selectedSchool.name} animated card preview`}
+                aria-label={`${selectedSchool.name} animated card preview`}
+                autoPlay
+                loop
+                muted
+                playsInline
               />
             ) : (
               <CardCanvas
@@ -513,7 +559,7 @@ function App() {
             <Share2 aria-hidden="true" />
             {isExporting
               ? `Preparing file${resultFormat === 'animated' ? ` ${Math.round(exportProgress * 100)}%` : '...'}`
-              : `Save ${resultFormat === 'animated' ? 'Animated GIF' : resultFormat === 'story' ? 'Story Image' : 'Card Image'}`}
+              : `Save ${resultFormat === 'animated' ? 'Animated Video' : resultFormat === 'story' ? 'Story Image' : 'Card Image'}`}
           </button>
           <button
             className="secondary-button friend-share-button"
@@ -539,8 +585,26 @@ function App() {
           >
             <X aria-hidden="true" />
           </button>
-          <img src={saveSurface.url} alt="Personalized artwork ready to save" />
-          <p>Press and hold the image to save it.</p>
+          {saveSurface.blob.type === 'video/mp4' ? (
+            <video src={saveSurface.previewUrl} controls autoPlay loop muted playsInline />
+          ) : (
+            <img src={saveSurface.previewUrl} alt="Personalized artwork ready to save" />
+          )}
+          <div className="save-surface-actions">
+            <a
+              className="secondary-button"
+              href={saveSurface.url}
+              download={saveSurface.fileName}
+            >
+              <Download aria-hidden="true" />
+              Download {saveSurface.blob.type === 'video/mp4' ? 'Video' : 'Image'}
+            </a>
+            <p>
+              {saveSurface.blob.type === 'video/mp4'
+                ? 'The video downloads to Files. From there, use Share, then Save Video to add it to Photos.'
+                : 'The image downloads to Files. From there, use Share, then Save Image to add it to Photos.'}
+            </p>
+          </div>
         </div>
       )}
     </main>

@@ -1,0 +1,8 @@
+name = "homecoming-2026-shares"
+main = "worker/src/index.js"
+compatibility_date = "2026-03-01"
+
+[[r2_buckets]]
+binding = "CARD_PREVIEWS"
+bucket_name = "homecoming-2026-card-previews"
+preview_bucket_name = "homecoming-2026-card-previews-preview"
