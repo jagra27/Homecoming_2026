@@ -8,3 +8,9 @@
 .Spotlight-V100/
 .Trashes/
 .fseventsd/
+
+# Node and Vite output
+node_modules/
+dist/
+*.local
+npm-debug.log*
