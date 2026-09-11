@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@fontsource/anton/400.css'
+import '@fontsource/archivo-black/400.css'
 import '@fontsource/arimo/400.css'
 import '@fontsource/arimo/600.css'
 import '@fontsource/arimo/700.css'

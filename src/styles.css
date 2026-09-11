@@ -476,33 +476,11 @@ button:focus-visible {
   aspect-ratio: 9 / 16;
 }
 
-.result-preview.is-animated::after {
-  position: absolute;
-  inset: -35% -80%;
-  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.34) 50%, transparent 58%);
-  content: '';
-  transform: translateX(-45%);
-  animation: foil-sweep 3.2s ease-in-out infinite;
-  pointer-events: none;
-}
-
 .animated-artwork,
 .save-surface video {
   display: block;
   width: 100%;
   height: auto;
-}
-
-@keyframes foil-sweep {
-  0%,
-  25% {
-    transform: translateX(-45%);
-  }
-
-  75%,
-  100% {
-    transform: translateX(45%);
-  }
 }
 
 .download-button {
@@ -688,7 +666,4 @@ button:focus-visible {
     transition: none;
   }
 
-  .result-preview.is-animated::after {
-    animation: none;
-  }
 }
