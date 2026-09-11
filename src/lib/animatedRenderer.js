@@ -254,7 +254,7 @@ export async function renderAnimatedCard(options, onProgress) {
     cardContext.save()
     cardContext.globalCompositeOperation = 'screen'
     cardContext.drawImage(foilCanvas, 0, 0)
-    cardContext.globalAlpha = 0.88
+    cardContext.globalAlpha = 0.94
     cardContext.drawImage(wordmarkCanvas, 0, 0)
     cardContext.restore()
 
