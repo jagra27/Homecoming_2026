@@ -422,7 +422,12 @@ function App() {
       {stage === 'editor' && (
         <section className="editor-view" aria-labelledby="editor-title">
           <div className="view-heading">
-            <p className="step-label">Step {stageNumber} of 3 / {selectedSchool.name}</p>
+            <div className="step-row">
+              <button className="step-back" type="button" onClick={goBack} aria-label="Go back">
+                <ArrowLeft aria-hidden="true" />
+              </button>
+              <p className="step-label">Step {stageNumber} of 3 / {selectedSchool.name}</p>
+            </div>
             <h1 id="editor-title">Make it yours</h1>
           </div>
 
@@ -524,7 +529,12 @@ function App() {
       {stage === 'results' && (
         <section className="results-view" aria-labelledby="results-title">
           <div className="view-heading">
-            <p className="step-label">Step {stageNumber} of 3 / {selectedSchool.name}</p>
+            <div className="step-row">
+              <button className="step-back" type="button" onClick={goBack} aria-label="Go back">
+                <ArrowLeft aria-hidden="true" />
+              </button>
+              <p className="step-label">Step {stageNumber} of 3 / {selectedSchool.name}</p>
+            </div>
             <h1 id="results-title">Your homecoming set</h1>
           </div>
 
