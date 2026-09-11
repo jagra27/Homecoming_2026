@@ -6,31 +6,39 @@ import {
   Output,
   Quality,
 } from 'mediabunny'
-import { CARD_HEIGHT, CARD_WIDTH, renderCard } from './cardRenderer'
+import {
+  CARD_HEIGHT,
+  CARD_WIDTH,
+  STORY_HEIGHT,
+  STORY_WIDTH,
+  renderCard,
+} from './cardRenderer'
 
-const VIDEO_WIDTH = CARD_WIDTH / 4
-const VIDEO_HEIGHT = CARD_HEIGHT / 4
+const VIDEO_WIDTH = STORY_WIDTH
+const VIDEO_HEIGHT = STORY_HEIGHT
+const CARD_CANVAS_WIDTH = CARD_WIDTH / 4
+const CARD_CANVAS_HEIGHT = CARD_HEIGHT / 4
 const VIDEO_DURATION = 8
 const FRAME_RATE = 15
 const MAX_ROTATION = 22
-const CARD_SCALE = 0.72
-const CARD_CENTER_Y = VIDEO_HEIGHT * 0.41
+const CARD_SCALE = 0.94
+const CARD_CENTER_Y = 920
 const PERSPECTIVE = 1350
 const PROJECTION_SLICES = 96
-const FOIL_BAND_WIDTH = VIDEO_WIDTH
+const FOIL_BAND_WIDTH = CARD_CANVAS_WIDTH
 const STORY_FOOTER_CROP = { x: 100, y: 1640, width: 880, height: 230 }
-const VIDEO_FOOTER = { x: 64, y: 1094, width: 800, height: 209 }
+const VIDEO_FOOTER = STORY_FOOTER_CROP
 const FOIL_WORD = 'DESIRES'
 const WORDMARK_INSET = 72
 const WORDMARK_TRACKING = 3
 const WORDMARK_STRETCH = 1.2
 const WORDMARK_ANGLE = -Math.atan2(
-  VIDEO_HEIGHT - WORDMARK_INSET * 2,
-  VIDEO_WIDTH - WORDMARK_INSET * 2,
+  CARD_CANVAS_HEIGHT - WORDMARK_INSET * 2,
+  CARD_CANVAS_WIDTH - WORDMARK_INSET * 2,
 )
 const WORDMARK_LENGTH = Math.hypot(
-  VIDEO_HEIGHT - WORDMARK_INSET * 2,
-  VIDEO_WIDTH - WORDMARK_INSET * 2,
+  CARD_CANVAS_HEIGHT - WORDMARK_INSET * 2,
+  CARD_CANVAS_WIDTH - WORDMARK_INSET * 2,
 ) - 90
 
 function loadImage(source) {
@@ -77,9 +85,9 @@ function createFoilGradient(context, sweepX, opacity = 1, flare = false) {
   const halfBandWidth = FOIL_BAND_WIDTH / 2
   const gradient = context.createLinearGradient(
     sweepX - halfBandWidth,
-    VIDEO_HEIGHT * 1.12,
+    CARD_CANVAS_HEIGHT * 1.12,
     sweepX + halfBandWidth,
-    -VIDEO_HEIGHT * 0.12,
+    -CARD_CANVAS_HEIGHT * 0.12,
   )
   gradient.addColorStop(0, 'rgba(34, 211, 238, 0)')
   gradient.addColorStop(0.3, `rgba(34, 211, 238, ${(flare ? 0.58 : 0.22) * opacity})`)
@@ -94,17 +102,18 @@ function createFoilGradient(context, sweepX, opacity = 1, flare = false) {
 function drawFoilLayer(canvas, wordmarkCanvas, rotation) {
   const context = canvas.getContext('2d')
   const wordmarkContext = wordmarkCanvas.getContext('2d')
-  context.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT)
-  wordmarkContext.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT)
+  context.clearRect(0, 0, CARD_CANVAS_WIDTH, CARD_CANVAS_HEIGHT)
+  wordmarkContext.clearRect(0, 0, CARD_CANVAS_WIDTH, CARD_CANVAS_HEIGHT)
   const normalizedRotation = (rotation + MAX_ROTATION) / (MAX_ROTATION * 2)
-  const sweepX = -VIDEO_WIDTH * 0.65 + (1 - normalizedRotation) * VIDEO_WIDTH * 2.3
+  const sweepX = -CARD_CANVAS_WIDTH * 0.65
+    + (1 - normalizedRotation) * CARD_CANVAS_WIDTH * 2.3
 
   context.globalCompositeOperation = 'screen'
   context.fillStyle = createFoilGradient(context, sweepX)
-  context.fillRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT)
+  context.fillRect(0, 0, CARD_CANVAS_WIDTH, CARD_CANVAS_HEIGHT)
 
   wordmarkContext.save()
-  wordmarkContext.translate(VIDEO_WIDTH / 2, VIDEO_HEIGHT / 2)
+  wordmarkContext.translate(CARD_CANVAS_WIDTH / 2, CARD_CANVAS_HEIGHT / 2)
   wordmarkContext.rotate(WORDMARK_ANGLE)
   fitWordmark(wordmarkContext, FOIL_WORD, WORDMARK_LENGTH)
   wordmarkContext.scale(1, WORDMARK_STRETCH)
@@ -118,7 +127,7 @@ function drawFoilLayer(canvas, wordmarkCanvas, rotation) {
 
   wordmarkContext.globalCompositeOperation = 'source-in'
   wordmarkContext.fillStyle = createFoilGradient(wordmarkContext, sweepX, 1, true)
-  wordmarkContext.fillRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT)
+  wordmarkContext.fillRect(0, 0, CARD_CANVAS_WIDTH, CARD_CANVAS_HEIGHT)
   wordmarkContext.globalCompositeOperation = 'source-over'
 }
 
@@ -128,14 +137,14 @@ function traceProjectedCard(context, rotation) {
   const points = []
 
   for (let slice = 0; slice <= PROJECTION_SLICES; slice += 1) {
-    const sourceX = slice * VIDEO_WIDTH / PROJECTION_SLICES
-    const localX = (sourceX - centerX) * CARD_SCALE
+    const sourceX = slice * CARD_CANVAS_WIDTH / PROJECTION_SLICES
+    const localX = (sourceX - CARD_CANVAS_WIDTH / 2) * CARD_SCALE
     const depth = -localX * Math.sin(radians)
     const perspective = PERSPECTIVE / (PERSPECTIVE + depth)
     points.push({
       x: centerX + localX * Math.cos(radians) * perspective,
-      top: CARD_CENTER_Y - VIDEO_HEIGHT * CARD_SCALE * perspective / 2,
-      bottom: CARD_CENTER_Y + VIDEO_HEIGHT * CARD_SCALE * perspective / 2,
+      top: CARD_CENTER_Y - CARD_CANVAS_HEIGHT * CARD_SCALE * perspective / 2,
+      bottom: CARD_CENTER_Y + CARD_CANVAS_HEIGHT * CARD_SCALE * perspective / 2,
     })
   }
 
@@ -165,20 +174,20 @@ function drawCardEdgeGlow(context, rotation) {
 
 function projectCard(context, cardCanvas, rotation) {
   const radians = (rotation * Math.PI) / 180
-  const sourceSliceWidth = VIDEO_WIDTH / PROJECTION_SLICES
+  const sourceSliceWidth = CARD_CANVAS_WIDTH / PROJECTION_SLICES
   const centerX = VIDEO_WIDTH / 2
 
   for (let slice = 0; slice < PROJECTION_SLICES; slice += 1) {
     const sourceX = slice * sourceSliceWidth
-    const localX1 = (sourceX - centerX) * CARD_SCALE
-    const localX2 = (sourceX + sourceSliceWidth - centerX) * CARD_SCALE
+    const localX1 = (sourceX - CARD_CANVAS_WIDTH / 2) * CARD_SCALE
+    const localX2 = (sourceX + sourceSliceWidth - CARD_CANVAS_WIDTH / 2) * CARD_SCALE
     const depth1 = -localX1 * Math.sin(radians)
     const depth2 = -localX2 * Math.sin(radians)
     const perspective1 = PERSPECTIVE / (PERSPECTIVE + depth1)
     const perspective2 = PERSPECTIVE / (PERSPECTIVE + depth2)
     const destinationX1 = centerX + localX1 * Math.cos(radians) * perspective1
     const destinationX2 = centerX + localX2 * Math.cos(radians) * perspective2
-    const destinationHeight = VIDEO_HEIGHT * CARD_SCALE * (perspective1 + perspective2) / 2
+    const destinationHeight = CARD_CANVAS_HEIGHT * CARD_SCALE * (perspective1 + perspective2) / 2
     const destinationY = CARD_CENTER_Y - destinationHeight / 2
 
     context.drawImage(
@@ -186,7 +195,7 @@ function projectCard(context, cardCanvas, rotation) {
       sourceX,
       0,
       sourceSliceWidth + 1,
-      VIDEO_HEIGHT,
+      CARD_CANVAS_HEIGHT,
       destinationX1,
       destinationY,
       destinationX2 - destinationX1 + 1,
@@ -213,8 +222,10 @@ export async function renderAnimatedCard(options, onProgress) {
   const foilCanvas = document.createElement('canvas')
   const wordmarkCanvas = document.createElement('canvas')
   const frameCanvas = document.createElement('canvas')
-  baseCanvas.width = cardCanvas.width = foilCanvas.width = wordmarkCanvas.width = frameCanvas.width = VIDEO_WIDTH
-  baseCanvas.height = cardCanvas.height = foilCanvas.height = wordmarkCanvas.height = frameCanvas.height = VIDEO_HEIGHT
+  baseCanvas.width = cardCanvas.width = foilCanvas.width = wordmarkCanvas.width = CARD_CANVAS_WIDTH
+  baseCanvas.height = cardCanvas.height = foilCanvas.height = wordmarkCanvas.height = CARD_CANVAS_HEIGHT
+  frameCanvas.width = VIDEO_WIDTH
+  frameCanvas.height = VIDEO_HEIGHT
   const [, storyTemplate] = await Promise.all([
     renderCard(baseCanvas, options),
     loadImage(options.school.storyCanvas),
@@ -237,7 +248,7 @@ export async function renderAnimatedCard(options, onProgress) {
   for (let frame = 0; frame < frameCount; frame += 1) {
     const progress = frame / frameCount
     const rotation = Math.sin(progress * Math.PI * 2) * MAX_ROTATION
-    cardContext.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT)
+    cardContext.clearRect(0, 0, CARD_CANVAS_WIDTH, CARD_CANVAS_HEIGHT)
     cardContext.drawImage(baseCanvas, 0, 0)
     drawFoilLayer(foilCanvas, wordmarkCanvas, rotation)
     cardContext.save()
