@@ -308,13 +308,18 @@ function App() {
   }
 
   return (
-    <main
-      className="app-shell"
-      style={{
-        '--school-primary': backgroundSchool.colors[0],
-        '--school-secondary': backgroundSchool.colors[1],
-      }}
-    >
+    <main className="app-shell">
+      <div className="school-backgrounds" aria-hidden="true">
+        {schools.map((school) => (
+          <div
+            className={`school-background${school.id === backgroundSchool.id ? ' is-active' : ''}`}
+            key={school.id}
+            style={{
+              backgroundImage: `linear-gradient(135deg, ${school.colors[0]}, ${school.colors[1]})`,
+            }}
+          />
+        ))}
+      </div>
       <header className="site-header">
         <div className="header-identity">
           {stage !== 'school' && (
