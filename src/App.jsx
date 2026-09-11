@@ -21,7 +21,7 @@ const initialCardDetails = {
   photoName: '',
 }
 
-const PUBLIC_APP_URL = 'https://jagra27.github.io/Homecoming_2026/'
+const PUBLIC_APP_URL = 'https://jagra27.github.io/Homecoming_2026/?v=external-heritage'
 const SHARE_SERVICE_URL = import.meta.env.VITE_SHARE_API_URL?.replace(/\/$/, '')
 
 function blobToDataUrl(blob) {
@@ -291,10 +291,19 @@ function App() {
       }
 
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], text, url: shareUrl })
+        await navigator.share({
+          files: [file],
+          title: 'External Heritage | Homecoming 2026',
+          text,
+          url: shareUrl,
+        })
         setShareStatus('Shared successfully.')
       } else if (navigator.share) {
-        await navigator.share({ text, url: shareUrl })
+        await navigator.share({
+          title: 'External Heritage | Homecoming 2026',
+          text,
+          url: shareUrl,
+        })
         setShareStatus('Invitation shared.')
       } else {
         await navigator.clipboard.writeText(`${text} ${shareUrl}`)
