@@ -17,6 +17,7 @@ const CARD_SCALE = 0.72
 const CARD_CENTER_Y = VIDEO_HEIGHT * 0.41
 const PERSPECTIVE = 1350
 const PROJECTION_SLICES = 96
+const FOIL_BAND_WIDTH = VIDEO_WIDTH
 const STORY_FOOTER_CROP = { x: 100, y: 1640, width: 880, height: 230 }
 const VIDEO_FOOTER = { x: 64, y: 1094, width: 800, height: 209 }
 const FOIL_WORD = 'DESIRES'
@@ -73,10 +74,11 @@ function drawTrackedWord(context, text) {
 }
 
 function createFoilGradient(context, sweepX, opacity = 1, flare = false) {
+  const halfBandWidth = FOIL_BAND_WIDTH / 2
   const gradient = context.createLinearGradient(
-    sweepX - 320,
+    sweepX - halfBandWidth,
     VIDEO_HEIGHT * 1.12,
-    sweepX + 320,
+    sweepX + halfBandWidth,
     -VIDEO_HEIGHT * 0.12,
   )
   gradient.addColorStop(0, 'rgba(34, 211, 238, 0)')
@@ -234,7 +236,7 @@ export async function renderAnimatedCard(options, onProgress) {
   const frameCount = VIDEO_DURATION * FRAME_RATE
   for (let frame = 0; frame < frameCount; frame += 1) {
     const progress = frame / frameCount
-    const rotation = Math.sin(progress * Math.PI * 4) * MAX_ROTATION
+    const rotation = Math.sin(progress * Math.PI * 2) * MAX_ROTATION
     cardContext.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT)
     cardContext.drawImage(baseCanvas, 0, 0)
     drawFoilLayer(foilCanvas, wordmarkCanvas, rotation)

@@ -35,6 +35,7 @@ function blobToDataUrl(blob) {
 
 function App() {
   const carouselRef = useRef(null)
+  const backgroundRefs = useRef([])
   const [activeIndex, setActiveIndex] = useState(0)
   const [detailIndex, setDetailIndex] = useState(0)
   const [detailTransition, setDetailTransition] = useState('idle')
@@ -67,23 +68,23 @@ function App() {
     const carousel = carouselRef.current
     if (!carousel) return
 
-    const center = carousel.scrollLeft + carousel.clientWidth / 2
-    const closestIndex = Array.from(carousel.children).reduce(
-      (bestIndex, card, index, cards) =>
-        Math.abs(card.offsetLeft + card.clientWidth / 2 - center) <
-        Math.abs(
-          cards[bestIndex].offsetLeft + cards[bestIndex].clientWidth / 2 - center,
-        )
-          ? index
-          : bestIndex,
-      0,
+    const cards = Array.from(carousel.children)
+    const cardStep = cards.length > 1
+      ? cards[1].offsetLeft - cards[0].offsetLeft
+      : 1
+    const progress = Math.min(
+      schools.length - 1,
+      Math.max(0, carousel.scrollLeft / cardStep),
     )
+    backgroundRefs.current.forEach((background, index) => {
+      if (background) background.style.opacity = Math.max(0, 1 - Math.abs(index - progress))
+    })
+    const closestIndex = Math.round(progress)
     setActiveIndex(closestIndex)
   }
 
   const activeSchool = schools[activeIndex]
   const detailSchool = schools[detailIndex]
-  const backgroundSchool = stage === 'school' ? activeSchool : selectedSchool
   const stageNumber = { school: 1, editor: 2, results: 3 }[stage]
 
   useEffect(() => {
@@ -310,10 +311,13 @@ function App() {
   return (
     <main className="app-shell">
       <div className="school-backgrounds" aria-hidden="true">
-        {schools.map((school) => (
+        {schools.map((school, index) => (
           <div
-            className={`school-background${school.id === backgroundSchool.id ? ' is-active' : ''}`}
+            className="school-background"
             key={school.id}
+            ref={(background) => {
+              backgroundRefs.current[index] = background
+            }}
             style={{
               backgroundImage: `linear-gradient(135deg, ${school.colors[0]}, ${school.colors[1]})`,
             }}

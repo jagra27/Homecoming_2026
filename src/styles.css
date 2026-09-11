@@ -45,7 +45,7 @@ button {
 }
 
 .school-backgrounds {
-  position: fixed;
+  position: absolute;
   z-index: 0;
   inset: 0;
   overflow: hidden;
@@ -66,11 +66,9 @@ button {
   z-index: 1;
   inset: -1px;
   opacity: 0;
-  transition: opacity 650ms ease;
-  will-change: opacity;
 }
 
-.school-background.is-active {
+.school-background:first-child {
   opacity: 1;
 }
 
@@ -693,10 +691,6 @@ button:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .school-background {
-    transition: none;
-  }
-
   .school-carousel {
     scroll-behavior: auto;
   }
