@@ -1,3 +1,15 @@
+@property --school-primary {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ffc72c;
+}
+
+@property --school-secondary {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #000000;
+}
+
 :root {
   font-family: 'Arimo', sans-serif;
   color: #f7f5ef;
@@ -36,9 +48,11 @@ button {
   min-height: 100vh;
   padding: 20px clamp(18px, 4vw, 56px) 48px;
   background:
-    linear-gradient(120deg, rgba(166, 27, 37, 0.13), transparent 38%),
-    radial-gradient(circle at 84% 18%, rgba(204, 163, 9, 0.16), transparent 24%),
-    #09131e;
+    linear-gradient(180deg, rgba(5, 10, 15, 0.32), rgba(5, 10, 15, 0.62)),
+    linear-gradient(135deg, var(--school-primary), var(--school-secondary));
+  transition:
+    --school-primary 650ms ease,
+    --school-secondary 650ms ease;
 }
 
 .site-header {
@@ -103,6 +117,7 @@ button {
 .step-label {
   margin: 0 0 10px;
   color: #e8b72c;
+  font-family: 'Arimo', sans-serif;
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -113,6 +128,7 @@ h1 {
   margin: 0;
   font-family: 'Anton', sans-serif;
   font-size: clamp(2.5rem, 7vw, 5.5rem);
+  font-style: italic;
   font-weight: 400;
   line-height: 0.98;
   text-transform: uppercase;
@@ -658,6 +674,10 @@ button:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .app-shell {
+    transition: none;
+  }
+
   .school-carousel {
     scroll-behavior: auto;
   }

@@ -43,7 +43,7 @@ function App() {
   const [cardDetails, setCardDetails] = useState(initialCardDetails)
   const [photoUrl, setPhotoUrl] = useState('')
   const [crop, setCrop] = useState({ zoom: 100, x: 0, y: 0 })
-  const [resultFormat, setResultFormat] = useState('card')
+  const [resultFormat, setResultFormat] = useState('story')
   const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(0)
   const [exportError, setExportError] = useState('')
@@ -83,6 +83,7 @@ function App() {
 
   const activeSchool = schools[activeIndex]
   const detailSchool = schools[detailIndex]
+  const backgroundSchool = stage === 'school' ? activeSchool : selectedSchool
   const stageNumber = { school: 1, editor: 2, results: 3 }[stage]
 
   useEffect(() => {
@@ -307,7 +308,13 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main
+      className="app-shell"
+      style={{
+        '--school-primary': backgroundSchool.colors[0],
+        '--school-secondary': backgroundSchool.colors[1],
+      }}
+    >
       <header className="site-header">
         <div className="header-identity">
           {stage !== 'school' && (
@@ -406,7 +413,7 @@ function App() {
       {stage === 'editor' && (
         <section className="editor-view" aria-labelledby="editor-title">
           <div className="view-heading">
-            <p className="step-label">Step {stageNumber} of 3 / {selectedSchool.abbreviation}</p>
+            <p className="step-label">Step {stageNumber} of 3 / {selectedSchool.name}</p>
             <h1 id="editor-title">Make it yours</h1>
           </div>
 
@@ -424,6 +431,7 @@ function App() {
               className="card-form"
               onSubmit={(event) => {
                 event.preventDefault()
+                setResultFormat('story')
                 setStage('results')
               }}
             >
@@ -507,7 +515,7 @@ function App() {
       {stage === 'results' && (
         <section className="results-view" aria-labelledby="results-title">
           <div className="view-heading">
-            <p className="step-label">Step {stageNumber} of 3 / {selectedSchool.abbreviation}</p>
+            <p className="step-label">Step {stageNumber} of 3 / {selectedSchool.name}</p>
             <h1 id="results-title">Your homecoming set</h1>
           </div>
 

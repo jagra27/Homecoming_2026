@@ -41,6 +41,14 @@ function loadImage(source) {
   })
 }
 
+function loadAnimationFonts() {
+  return Promise.all([
+    document.fonts.load('400 280px "Archivo Black"', FOIL_WORD),
+    document.fonts.load('400 690px Anton', 'HOMECOMING'),
+    document.fonts.load('700 76px Arimo', 'ALUMNI 2026'),
+  ])
+}
+
 function fitWordmark(context, text, maxWidth) {
   let fontSize = 280
   context.font = `400 ${fontSize}px "Archivo Black"`
@@ -195,6 +203,8 @@ export async function renderAnimatedCard(options, onProgress) {
   if (!canEncodeH264) {
     throw new Error('This browser cannot create an H.264 video')
   }
+
+  await loadAnimationFonts()
 
   const baseCanvas = document.createElement('canvas')
   const cardCanvas = document.createElement('canvas')
