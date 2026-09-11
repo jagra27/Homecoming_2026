@@ -140,16 +140,6 @@ button {
   text-transform: uppercase;
 }
 
-.step-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.step-back {
-  display: none;
-}
-
 h1 {
   max-width: 760px;
   margin: 0;
@@ -671,213 +661,32 @@ button:focus-visible {
 }
 
 @media (max-width: 520px) {
-  html,
-  body {
-    height: 100%;
-    overflow: hidden;
-  }
-
-  .app-shell {
-    height: 100svh;
-    min-height: 0;
-    padding: max(12px, env(safe-area-inset-top)) 14px max(12px, env(safe-area-inset-bottom));
-    overflow: hidden;
-  }
-
   .site-header {
-    display: none;
-  }
-
-  .school-selection,
-  .editor-view,
-  .results-view {
-    height: 100%;
-    padding-top: 0;
-  }
-
-  .step-label {
-    margin-bottom: 5px;
-    font-size: 0.66rem;
-    line-height: 1.2;
-  }
-
-  .step-row {
-    min-height: 30px;
-    gap: 8px;
-  }
-
-  .step-row .step-label {
-    margin-bottom: 0;
-  }
-
-  .step-back {
-    display: grid;
-    flex: 0 0 auto;
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    place-items: center;
-    color: #f7f5ef;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    border-radius: 50%;
-  }
-
-  .step-back svg {
-    width: 15px;
-  }
-
-  h1,
-  .view-heading h1 {
-    font-size: clamp(1.85rem, 9vw, 2.35rem);
-    line-height: 0.92;
-  }
-
-  .selection-intro {
-    display: none;
-  }
-
-  .selector-layout {
-    gap: 8px;
-    margin-top: 12px;
-  }
-
-  .carousel-frame {
-    width: min(64vw, calc(42svh * 3712 / 5248));
-  }
-
-  .carousel-controls {
-    grid-template-columns: 36px 1fr 36px;
-    gap: 10px;
-    margin-top: 7px;
-  }
-
-  .icon-button {
-    width: 36px;
-    height: 36px;
-  }
-
-  .school-details {
-    min-height: 0;
-  }
-
-  .school-abbreviation {
-    margin-bottom: 3px;
-    font-size: 0.68rem;
-  }
-
-  .school-details h2 {
-    font-size: clamp(1.4rem, 7vw, 1.8rem);
-  }
-
-  .school-meta {
-    margin-top: 7px;
-    font-size: 0.66rem;
-  }
-
-  .color-swatches > span {
-    width: 14px;
-    height: 14px;
-  }
-
-  .school-details .primary-button {
-    min-height: 44px;
-    margin-top: 12px;
-  }
-
-  .editor-layout {
-    display: block;
-    margin-top: 12px;
-  }
-
-  .editor-preview {
-    display: none;
-  }
-
-  .card-form {
-    padding-top: 0;
-  }
-
-  .upload-field {
-    min-height: 44px;
-    padding-inline: 12px;
-    font-size: 0.78rem;
-  }
-
-  .photo-controls {
-    gap: 5px;
-    margin-top: 8px;
-    padding: 7px 10px;
-  }
-
-  .photo-controls label {
-    grid-template-columns: 68px 1fr;
-    gap: 8px;
-    font-size: 0.64rem;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .form-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 10px;
-    margin-top: 10px;
-  }
-
-  .form-grid label {
-    gap: 4px;
-    font-size: 0.64rem;
-  }
-
-  .form-grid input,
-  .form-grid select {
-    min-height: 40px;
-    padding-inline: 9px;
+    grid-template-columns: 1fr;
   }
 
   .full-field {
-    grid-column: 1 / -1;
-  }
-
-  .form-submit {
-    min-height: 44px;
-    margin-top: 12px;
+    grid-column: auto;
   }
 
   .format-tabs {
-    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
   }
 
   .format-tab {
-    min-height: 44px;
-    font-size: 0.68rem;
-  }
-
-  .result-preview,
-  .result-preview.is-story,
-  .result-preview.is-animated {
-    width: auto;
-    max-width: 68vw;
-    height: min(43svh, 390px);
-    margin-top: 10px;
-  }
-
-  .result-preview canvas,
-  .result-preview img,
-  .animated-artwork {
-    width: auto;
-    max-width: 100%;
-    height: 100%;
-    margin: 0 auto;
-    object-fit: contain;
-  }
-
-  .download-button {
-    min-height: 44px;
-    margin-top: 10px;
-  }
-
-  .friend-share-button {
-    min-height: 44px;
-    margin-top: 7px;
+    min-width: 0;
+    min-height: 52px;
+    padding: 0 8px;
+    font-size: 0.78rem;
+    line-height: 1.2;
   }
 }
 
