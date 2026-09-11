@@ -315,7 +315,7 @@ function App() {
               <ArrowLeft aria-hidden="true" />
             </button>
           )}
-          <p className="wordmark">Eternal Heritage</p>
+          <p className="wordmark">External Heritage</p>
         </div>
         <p className="edition">Homecoming 2026</p>
       </header>
@@ -486,6 +486,10 @@ function App() {
                   Status
                   <select name="status" value={cardDetails.status} onChange={updateCardDetails}>
                     <option>Alumni</option>
+                    <option>Faculty</option>
+                    <option>Future Student</option>
+                    <option>Legacy Mom</option>
+                    <option>Legacy Dad</option>
                     <option>Student</option>
                   </select>
                 </label>
@@ -509,9 +513,9 @@ function App() {
 
           <div className="format-tabs" role="tablist" aria-label="Output format">
             {[
-              ['card', 'Trading card'],
               ['story', 'Instagram story'],
               ['animated', 'Animated card'],
+              ['card', 'Trading card'],
             ].map(([id, label]) => (
               <button
                 key={id}

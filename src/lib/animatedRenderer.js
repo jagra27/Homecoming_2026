@@ -23,9 +23,9 @@ function drawFoilSweep(context, progress) {
     0,
   )
   gradient.addColorStop(0, 'rgba(61, 197, 255, 0)')
-  gradient.addColorStop(0.38, 'rgba(61, 197, 255, 0.12)')
-  gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.38)')
-  gradient.addColorStop(0.62, 'rgba(255, 198, 66, 0.12)')
+  gradient.addColorStop(0.38, 'rgba(61, 197, 255, 0.13)')
+  gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)')
+  gradient.addColorStop(0.62, 'rgba(255, 198, 66, 0.13)')
   gradient.addColorStop(1, 'rgba(255, 198, 66, 0)')
 
   context.save()

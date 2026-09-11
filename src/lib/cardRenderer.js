@@ -76,12 +76,12 @@ function drawCardText(context, details) {
     const firstNameSpacing = 20
     const spacedWidth = firstNameSpacing * Math.max(firstName.length - 1, 0)
     fitText(context, firstName, 1320 - spacedWidth, 290, 'Anton')
-    drawSpacedText(context, firstName, 255, 3970, firstNameSpacing)
+    drawSpacedText(context, firstName, 255, 4015, firstNameSpacing)
   }
 
   if (lastName) {
     fitText(context, lastName, 1820, 690, 'Anton', 'italic ')
-    context.fillText(lastName, 235, 4590)
+    context.fillText(lastName, 235, 4635)
   }
 
   context.shadowColor = 'transparent'
