@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Download, Send, Share2, Upload, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Download, LoaderCircle, Send, Share2, Upload, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import CardCanvas from './components/CardCanvas'
 import { schools } from './data/schools'
@@ -21,6 +21,7 @@ const initialCardDetails = {
   photoName: '',
 }
 
+// TODO: Replace with the public iframe host page URL once it is known.
 const PUBLIC_APP_URL = 'https://jagra27.github.io/Homecoming_2026/?v=external-heritage'
 const SHARE_SERVICE_URL = import.meta.env.VITE_SHARE_API_URL?.replace(/\/$/, '')
 
@@ -53,6 +54,7 @@ function App() {
   const [friendCardBlob, setFriendCardBlob] = useState(null)
   const [friendPreviewBlob, setFriendPreviewBlob] = useState(null)
   const [shareStatus, setShareStatus] = useState('')
+  const [isReviewing, setIsReviewing] = useState(false)
 
   const showSchool = (index) => {
     const nextIndex = Math.min(Math.max(index, 0), schools.length - 1)
@@ -86,6 +88,13 @@ function App() {
   const activeSchool = schools[activeIndex]
   const detailSchool = schools[detailIndex]
   const stageNumber = { school: 1, editor: 2, results: 3 }[stage]
+  const isFormComplete = Boolean(
+    photoUrl
+    && cardDetails.firstName.trim()
+    && cardDetails.lastName.trim()
+    && cardDetails.occupation.trim()
+    && cardDetails.classYear.trim(),
+  )
 
   useEffect(() => {
     if (activeIndex === detailIndex) return undefined
@@ -101,6 +110,11 @@ function App() {
 
     return () => window.clearTimeout(swapTimer)
   }, [activeIndex, detailIndex])
+
+  useEffect(() => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [stage])
 
   useEffect(() => {
     if (stage !== 'results') return undefined
@@ -232,7 +246,19 @@ function App() {
     setCrop((current) => ({ ...current, [name]: Number(value) }))
   }
 
+  const reviewSet = (event) => {
+    event.preventDefault()
+    if (isReviewing) return
+
+    setIsReviewing(true)
+    setResultFormat('story')
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => setStage('results'))
+    })
+  }
+
   const goBack = () => {
+    setIsReviewing(false)
     setStage((current) => (current === 'results' ? 'editor' : 'school'))
   }
 
@@ -447,11 +473,7 @@ function App() {
 
             <form
               className="card-form"
-              onSubmit={(event) => {
-                event.preventDefault()
-                setResultFormat('story')
-                setStage('results')
-              }}
+              onSubmit={reviewSet}
             >
               <label className="upload-field">
                 <Upload aria-hidden="true" />
@@ -521,9 +543,23 @@ function App() {
                 </label>
               </div>
 
-              <button className="primary-button form-submit" type="submit">
-                Review my set
-                <ArrowRight aria-hidden="true" />
+              <button
+                className={`primary-button form-submit${isFormComplete ? ' is-ready' : ''}${isReviewing ? ' is-reviewing' : ''}`}
+                type="submit"
+                disabled={isReviewing}
+                aria-busy={isReviewing}
+              >
+                {isReviewing ? (
+                  <>
+                    Preparing your set
+                    <LoaderCircle className="loading-icon" aria-hidden="true" />
+                  </>
+                ) : (
+                  <>
+                    Review my set
+                    <ArrowRight aria-hidden="true" />
+                  </>
+                )}
               </button>
             </form>
           </div>
