@@ -289,7 +289,7 @@ function App() {
   const shareWithFriend = async () => {
     if (!friendCardBlob) return
     const firstName = cardDetails.firstName.trim() || 'A friend'
-    const text = `${firstName} wants you to create your trading card for Homecoming! Powered by Desires By Saint.`
+    const text = `${firstName} wants you to create your trading card for Homecoming with External Heritage.`
     const file = new File(
       [friendCardBlob],
       `${selectedSchool.abbreviation.toLowerCase()}-homecoming-card-${cardDetails.lastName.toLowerCase()}.png`,

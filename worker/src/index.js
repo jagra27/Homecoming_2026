@@ -77,7 +77,7 @@ async function serveSharePage(request, shareId, env) {
   if (!object) return Response.redirect(APP_URL, 302)
 
   const firstName = object.customMetadata?.firstName || 'A friend'
-  const description = `${firstName} wants you to create your trading card for Homecoming! Powered by Desires By Saint.`
+  const description = `${firstName} wants you to create your trading card for Homecoming with External Heritage.`
   const origin = new URL(request.url).origin
   const shareUrl = `${origin}/share/${shareId}`
   const imageUrl = `${origin}/images/${shareId}.png`
