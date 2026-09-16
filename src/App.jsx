@@ -51,8 +51,8 @@ function App() {
   const [exportError, setExportError] = useState('')
   const [resultArtifact, setResultArtifact] = useState(null)
   const [saveSurface, setSaveSurface] = useState(null)
-  const [friendCardBlob, setFriendCardBlob] = useState(null)
   const [friendPreviewBlob, setFriendPreviewBlob] = useState(null)
+  const [friendShareUrl, setFriendShareUrl] = useState('')
   const [shareStatus, setShareStatus] = useState('')
   const [isReviewing, setIsReviewing] = useState(false)
 
@@ -194,19 +194,15 @@ function App() {
         photoUrl,
         crop,
       })
-      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
       const previewCanvas = document.createElement('canvas')
       previewCanvas.width = CARD_WIDTH / 4
       previewCanvas.height = CARD_HEIGHT / 4
       previewCanvas.getContext('2d').drawImage(canvas, 0, 0, previewCanvas.width, previewCanvas.height)
       const previewBlob = await new Promise((resolve) => previewCanvas.toBlob(resolve, 'image/png'))
-      if (!cancelled) {
-        setFriendCardBlob(blob)
-        setFriendPreviewBlob(previewBlob)
-      }
+      if (!previewBlob) throw new Error('Unable to encode friend preview')
+      if (!cancelled) setFriendPreviewBlob(previewBlob)
     }
 
-    setFriendCardBlob(null)
     setFriendPreviewBlob(null)
     prepareFriendCard().catch((error) => {
       if (!cancelled) console.error('Unable to prepare friend share card', error)
@@ -215,6 +211,49 @@ function App() {
       cancelled = true
     }
   }, [stage, selectedSchool, cardDetails, photoUrl, crop])
+
+  useEffect(() => {
+    if (stage !== 'results' || !friendPreviewBlob) return undefined
+
+    let cancelled = false
+    const prepareInvitation = async () => {
+      setFriendShareUrl('')
+      setShareStatus('Preparing personalized invitation...')
+
+      if (!SHARE_SERVICE_URL) {
+        setFriendShareUrl(PUBLIC_APP_URL)
+        setShareStatus('Invitation ready to share.')
+        return
+      }
+
+      try {
+        const formData = new FormData()
+        formData.append('image', friendPreviewBlob, 'card-preview.png')
+        formData.append('firstName', cardDetails.firstName.trim() || 'A friend')
+        const response = await fetch(`${SHARE_SERVICE_URL}/api/shares`, {
+          method: 'POST',
+          body: formData,
+        })
+        if (!response.ok) throw new Error('Unable to create personalized invitation')
+        const invitation = await response.json()
+        if (!cancelled) {
+          setFriendShareUrl(invitation.shareUrl)
+          setShareStatus('Invitation ready to share.')
+        }
+      } catch (error) {
+        console.warn('Using the public invitation link', error)
+        if (!cancelled) {
+          setFriendShareUrl(PUBLIC_APP_URL)
+          setShareStatus('Invitation ready to share.')
+        }
+      }
+    }
+
+    prepareInvitation()
+    return () => {
+      cancelled = true
+    }
+  }, [stage, friendPreviewBlob, cardDetails.firstName])
 
   const chooseSchool = () => {
     setSelectedSchool(detailSchool)
@@ -287,52 +326,20 @@ function App() {
   }
 
   const shareWithFriend = async () => {
-    if (!friendCardBlob) return
+    if (!friendShareUrl) return
     const firstName = cardDetails.firstName.trim() || 'A friend'
     const text = `${firstName} wants you to create your trading card for Homecoming with External Heritage.`
-    const file = new File(
-      [friendCardBlob],
-      `${selectedSchool.abbreviation.toLowerCase()}-homecoming-card-${cardDetails.lastName.toLowerCase()}.png`,
-      { type: 'image/png' },
-    )
 
     try {
-      let shareUrl = PUBLIC_APP_URL
-      if (SHARE_SERVICE_URL && friendPreviewBlob) {
-        setShareStatus('Preparing personalized invitation...')
-        try {
-          const formData = new FormData()
-          formData.append('image', friendPreviewBlob, 'card-preview.png')
-          formData.append('firstName', firstName)
-          const response = await fetch(`${SHARE_SERVICE_URL}/api/shares`, {
-            method: 'POST',
-            body: formData,
-          })
-          if (!response.ok) throw new Error('Unable to create personalized invitation')
-          const invitation = await response.json()
-          shareUrl = invitation.shareUrl
-        } catch (error) {
-          console.warn('Using the public invitation link', error)
-        }
-      }
-
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'External Heritage | Homecoming 2026',
-          text,
-          url: shareUrl,
-        })
-        setShareStatus('Shared successfully.')
-      } else if (navigator.share) {
+      if (navigator.share) {
         await navigator.share({
           title: 'External Heritage | Homecoming 2026',
           text,
-          url: shareUrl,
+          url: friendShareUrl,
         })
         setShareStatus('Invitation shared.')
       } else {
-        await navigator.clipboard.writeText(`${text} ${shareUrl}`)
+        await navigator.clipboard.writeText(`${text} ${friendShareUrl}`)
         setShareStatus('Invitation link copied.')
       }
     } catch (error) {
@@ -631,7 +638,7 @@ function App() {
             className="secondary-button friend-share-button"
             type="button"
             onClick={shareWithFriend}
-            disabled={!friendCardBlob}
+            disabled={!friendShareUrl}
           >
             <Send aria-hidden="true" />
             Share with a friend
