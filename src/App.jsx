@@ -54,6 +54,8 @@ function App() {
   const carouselRef = useRef(null)
   const backgroundRefs = useRef([])
   const scrollEndTimerRef = useRef(null)
+  const scrollTargetIndexRef = useRef(null)
+  const isRestoringCarouselRef = useRef(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const [detailIndex, setDetailIndex] = useState(0)
   const [detailTransition, setDetailTransition] = useState('idle')
@@ -74,7 +76,11 @@ function App() {
 
   const showSchool = (index) => {
     const nextIndex = Math.min(Math.max(index, 0), schools.length - 1)
+    if (nextIndex === detailIndex) return
+
     window.clearTimeout(scrollEndTimerRef.current)
+    scrollTargetIndexRef.current = nextIndex
+    setDetailTransition('out')
     carouselRef.current?.children[nextIndex]?.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
@@ -98,14 +104,21 @@ function App() {
     backgroundRefs.current.forEach((background, index) => {
       if (background) background.style.opacity = Math.max(0, 1 - Math.abs(index - progress))
     })
+
+    if (isRestoringCarouselRef.current) return
+
     const closestIndex = Math.round(progress)
+    setDetailTransition('out')
     window.clearTimeout(scrollEndTimerRef.current)
     scrollEndTimerRef.current = window.setTimeout(() => {
-      setActiveIndex(closestIndex)
+      const settledIndex = scrollTargetIndexRef.current ?? closestIndex
+      scrollTargetIndexRef.current = null
+      setActiveIndex(settledIndex)
+      setDetailIndex(settledIndex)
+      setDetailTransition('idle')
     }, 120)
   }
 
-  const activeSchool = schools[activeIndex]
   const detailSchool = schools[detailIndex]
   const stageNumber = { school: 1, editor: 2, results: 3 }[stage]
   const isFormComplete = Boolean(
@@ -117,18 +130,6 @@ function App() {
   )
 
   useEffect(() => {
-    if (activeIndex === detailIndex) return undefined
-
-    setDetailTransition('out')
-    const swapTimer = window.setTimeout(() => {
-      setDetailIndex(activeIndex)
-      setDetailTransition('idle')
-    }, 140)
-
-    return () => window.clearTimeout(swapTimer)
-  }, [activeIndex, detailIndex])
-
-  useEffect(() => {
     window.clearTimeout(scrollEndTimerRef.current)
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
@@ -138,9 +139,13 @@ function App() {
         const carousel = carouselRef.current
         const activeSlide = carousel?.children[activeIndex]
         if (carousel && activeSlide) {
+          isRestoringCarouselRef.current = true
           carousel.style.scrollBehavior = 'auto'
           carousel.scrollLeft = activeSlide.offsetLeft - carousel.offsetLeft
           carousel.style.removeProperty('scroll-behavior')
+          window.requestAnimationFrame(() => {
+            isRestoringCarouselRef.current = false
+          })
         }
       })
       return () => window.cancelAnimationFrame(restoreFrame)

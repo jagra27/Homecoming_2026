@@ -228,9 +228,9 @@ h1 {
 .school-details-content {
   opacity: 1;
   transform: translateY(0);
-  animation: school-detail-enter 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: school-detail-enter 260ms cubic-bezier(0.22, 1, 0.36, 1);
   transition:
-    opacity 140ms ease,
+    opacity 180ms ease,
     transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -348,10 +348,6 @@ button:focus-visible {
   display: block;
   width: 100%;
   height: auto;
-}
-
-.editor-preview.is-loading canvas {
-  filter: grayscale(0.7) brightness(0.42);
 }
 
 .card-form {
