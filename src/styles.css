@@ -35,7 +35,7 @@ button {
 .app-shell {
   position: relative;
   min-height: 100vh;
-  padding: 20px clamp(18px, 4vw, 56px) 48px;
+  padding: 12px clamp(18px, 4vw, 56px) 32px;
   background: transparent;
 }
 
@@ -98,11 +98,11 @@ button {
 .results-view {
   width: min(1180px, 100%);
   margin: 0 auto;
-  padding-top: clamp(20px, 4vh, 44px);
+  padding-top: clamp(12px, 2vh, 24px);
 }
 
 .step-label {
-  margin: 0 0 10px;
+  margin: 0 0 6px;
   color: #e8b72c;
   font-family: 'Arimo', sans-serif;
   font-size: 0.78rem;
@@ -123,7 +123,7 @@ h1 {
 
 .selection-intro {
   max-width: 520px;
-  margin: 18px 0 0;
+  margin: 12px 0 0;
   color: rgba(247, 245, 239, 0.7);
   font-size: clamp(0.95rem, 2vw, 1.08rem);
   line-height: 1.6;
@@ -134,7 +134,7 @@ h1 {
   grid-template-columns: minmax(260px, 0.8fr) minmax(280px, 1fr);
   align-items: center;
   gap: clamp(36px, 8vw, 104px);
-  margin-top: clamp(36px, 6vw, 68px);
+  margin-top: clamp(24px, 4vw, 44px);
 }
 
 .carousel-frame {
@@ -286,7 +286,7 @@ h1 {
   justify-content: center;
   gap: 12px;
   min-height: 52px;
-  margin-top: 34px;
+  margin-top: 26px;
   padding: 0 22px;
   color: #09131e;
   background: #f7f5ef;
@@ -313,7 +313,7 @@ button:focus-visible {
   grid-template-columns: minmax(260px, 0.75fr) minmax(320px, 1fr);
   align-items: start;
   gap: clamp(40px, 8vw, 110px);
-  margin-top: clamp(36px, 6vw, 64px);
+  margin-top: clamp(24px, 4vw, 44px);
 }
 
 .editor-preview,
@@ -403,8 +403,8 @@ button:focus-visible {
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 22px 18px;
-  margin-top: 30px;
+  gap: 18px;
+  margin-top: 22px;
 }
 
 .form-grid label {
@@ -481,7 +481,7 @@ button:focus-visible {
 .format-tabs {
   display: flex;
   gap: 6px;
-  margin-top: 38px;
+  margin-top: 24px;
   overflow-x: auto;
 }
 
@@ -503,7 +503,7 @@ button:focus-visible {
 
 .result-preview {
   position: relative;
-  margin: 46px auto 0;
+  margin: 30px auto 0;
   filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.32));
   overflow: hidden;
 }
@@ -635,11 +635,11 @@ button:focus-visible {
 @media (max-width: 760px) {
   .selector-layout {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 24px;
   }
 
   .carousel-frame {
-    width: min(78vw, 340px);
+    width: min(72vw, 320px);
     margin: 0 auto;
   }
 
@@ -658,11 +658,11 @@ button:focus-visible {
 
   .editor-layout {
     grid-template-columns: 1fr;
-    margin-top: 36px;
+    margin-top: 24px;
   }
 
   .editor-preview {
-    width: min(82vw, 350px);
+    width: min(74vw, 320px);
     margin: 0 auto;
   }
 }
