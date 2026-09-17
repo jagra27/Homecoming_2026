@@ -253,25 +253,36 @@ function App() {
     setStage((current) => (current === 'results' ? 'editor' : 'school'))
   }
 
+  const openSaveSurface = async () => {
+    const previewUrl = resultArtifact.blob.type.startsWith('image/')
+      ? await blobToDataUrl(resultArtifact.blob)
+      : resultArtifact.url
+    setSaveSurface({ ...resultArtifact, previewUrl })
+  }
+
   const saveArtwork = async () => {
     if (!resultArtifact || resultArtifact.format !== resultFormat) return
+    setExportError('')
+
     try {
       const file = new File([resultArtifact.blob], resultArtifact.fileName, {
         type: resultArtifact.blob.type,
       })
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: `${selectedSchool.name} Homecoming 2026`,
-        })
-      } else {
-        const previewUrl = resultArtifact.blob.type.startsWith('image/')
-          ? await blobToDataUrl(resultArtifact.blob)
-          : resultArtifact.url
-        setSaveSurface({ ...resultArtifact, previewUrl })
+        try {
+          await navigator.share({
+            files: [file],
+            title: `${selectedSchool.name} Homecoming 2026`,
+          })
+          return
+        } catch (error) {
+          if (error.name === 'AbortError') return
+          console.warn('Native file sharing unavailable; opening save view', error)
+        }
       }
+
+      await openSaveSurface()
     } catch (error) {
-      if (error.name === 'AbortError') return
       console.error('Unable to export artwork', error)
       setExportError('Export failed. Please try again.')
     }
@@ -634,7 +645,7 @@ function App() {
             <p>
               {saveSurface.blob.type === 'video/mp4'
                 ? 'The video downloads to Files. From there, use Share, then Save Video to add it to Photos.'
-                : 'The image downloads to Files. From there, use Share, then Save Image to add it to Photos.'}
+                : 'On a phone, press and hold the image above, then choose Save to Photos. You can also use Download Image.'}
             </p>
           </div>
         </div>
