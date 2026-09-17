@@ -8,9 +8,8 @@ import {
   STORY_WIDTH,
 } from '../lib/cardRenderer'
 
-function CardCanvas({ school, details, photoUrl, crop, format = 'card', className = '', onLoadingChange }) {
+function CardCanvas({ school, details, photoUrl, crop, format = 'card', className = '' }) {
   const canvasRef = useRef(null)
-  const loadedTemplateRef = useRef('')
 
   useEffect(() => {
     let cancelled = false
@@ -18,10 +17,6 @@ function CardCanvas({ school, details, photoUrl, crop, format = 'card', classNam
     const buffer = document.createElement('canvas')
     buffer.width = canvas.width
     buffer.height = canvas.height
-    const templateSource = format === 'story' ? school.storyCanvas : school.cardCanvas
-    const shouldReportLoading = Boolean(
-      onLoadingChange && loadedTemplateRef.current !== templateSource,
-    )
 
     const draw = async () => {
       const renderer = format === 'story' ? renderStory : renderCard
@@ -33,25 +28,14 @@ function CardCanvas({ school, details, photoUrl, crop, format = 'card', classNam
       context.drawImage(buffer, 0, 0)
     }
 
-    if (shouldReportLoading) onLoadingChange(true)
-    draw()
-      .then(() => {
-        if (!cancelled && shouldReportLoading) {
-          loadedTemplateRef.current = templateSource
-          onLoadingChange(false)
-        }
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          if (shouldReportLoading) onLoadingChange(false)
-          console.error('Unable to render card preview', error)
-        }
-      })
+    draw().catch((error) => {
+      if (!cancelled) console.error('Unable to render card preview', error)
+    })
 
     return () => {
       cancelled = true
     }
-  }, [school, details, photoUrl, crop, format, onLoadingChange])
+  }, [school, details, photoUrl, crop, format])
 
   const isStory = format === 'story'
 

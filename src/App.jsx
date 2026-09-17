@@ -72,7 +72,6 @@ function App() {
   const [saveSurface, setSaveSurface] = useState(null)
   const [shareStatus, setShareStatus] = useState('')
   const [isReviewing, setIsReviewing] = useState(false)
-  const [isPreviewLoading, setIsPreviewLoading] = useState(false)
 
   const showSchool = (index) => {
     const nextIndex = Math.min(Math.max(index, 0), schools.length - 1)
@@ -446,20 +445,13 @@ function App() {
           </div>
 
           <div className="editor-layout">
-            <div className={`editor-preview${isPreviewLoading ? ' is-loading' : ''}`}>
+            <div className="editor-preview">
               <CardCanvas
                 school={selectedSchool}
                 details={cardDetails}
                 photoUrl={photoUrl}
                 crop={crop}
-                onLoadingChange={setIsPreviewLoading}
               />
-              {isPreviewLoading && (
-                <div className="preview-loading" role="status" aria-live="polite">
-                  <LoaderCircle aria-hidden="true" />
-                  <span>Loading full-quality card</span>
-                </div>
-              )}
             </div>
 
             <form
