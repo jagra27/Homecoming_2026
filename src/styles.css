@@ -75,7 +75,6 @@ button {
 .view-navigation {
   width: min(1180px, 100%);
   margin: 0 auto;
-  padding-bottom: 18px;
 }
 
 .header-back {
@@ -99,7 +98,7 @@ button {
 .results-view {
   width: min(1180px, 100%);
   margin: 0 auto;
-  padding-top: clamp(42px, 8vh, 88px);
+  padding-top: clamp(20px, 4vh, 44px);
 }
 
 .step-label {
@@ -314,7 +313,7 @@ button:focus-visible {
   grid-template-columns: minmax(260px, 0.75fr) minmax(320px, 1fr);
   align-items: start;
   gap: clamp(40px, 8vw, 110px);
-  margin-top: clamp(64px, 9vw, 96px);
+  margin-top: clamp(36px, 6vw, 64px);
 }
 
 .editor-preview,
@@ -659,7 +658,7 @@ button:focus-visible {
 
   .editor-layout {
     grid-template-columns: 1fr;
-    margin-top: 64px;
+    margin-top: 36px;
   }
 
   .editor-preview {
