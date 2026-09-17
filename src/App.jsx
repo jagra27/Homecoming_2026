@@ -207,6 +207,19 @@ function App() {
     }))
   }
 
+  const revealFocusedField = (event) => {
+    if (!event.target.matches('.form-grid input, .form-grid select')) return
+
+    window.setTimeout(() => {
+      const viewportHeight = window.visualViewport?.height || window.innerHeight
+      const targetTop = event.target.getBoundingClientRect().top + window.scrollY
+      window.scrollTo({
+        top: Math.max(0, targetTop - viewportHeight * 0.38),
+        behavior: 'smooth',
+      })
+    }, 280)
+  }
+
   const updatePhoto = (event) => {
     const [file] = event.target.files
     if (!file) return
@@ -420,6 +433,7 @@ function App() {
             <form
               className="card-form"
               onSubmit={reviewSet}
+              onFocusCapture={revealFocusedField}
             >
               <label className="upload-field">
                 <Upload aria-hidden="true" />
@@ -539,7 +553,7 @@ function App() {
           </div>
 
           <div
-            className={`result-preview${resultFormat === 'story' ? ' is-story' : ''}${resultFormat === 'animated' ? ' is-animated' : ''}`}
+            className={`result-preview${resultFormat === 'story' ? ' is-story' : ''}${resultFormat === 'animated' ? ' is-animated' : ''}${resultFormat === 'animated' && isExporting ? ' is-loading' : ''}`}
           >
             {resultFormat === 'animated' && resultArtifact?.format === 'animated' ? (
               <video
@@ -559,6 +573,13 @@ function App() {
                 crop={crop}
                 format={resultFormat === 'story' ? 'story' : 'card'}
               />
+            )}
+            {resultFormat === 'animated' && isExporting && (
+              <div className="preview-loading" role="status" aria-live="polite">
+                <LoaderCircle aria-hidden="true" />
+                <span>Preparing animation</span>
+                <strong>{Math.round(exportProgress * 100)}%</strong>
+              </div>
             )}
           </div>
 

@@ -508,6 +508,40 @@ button:focus-visible {
   overflow: hidden;
 }
 
+.result-preview.is-loading canvas {
+  filter: grayscale(0.7) brightness(0.42);
+}
+
+.preview-loading {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  color: #f7f5ef;
+  background: rgba(9, 19, 30, 0.42);
+  text-align: center;
+}
+
+.preview-loading svg {
+  width: 34px;
+  height: 34px;
+  animation: loading-spin 700ms linear infinite;
+}
+
+.preview-loading span {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.preview-loading strong {
+  color: #e8b72c;
+  font-size: 1rem;
+}
+
 .result-preview.is-story {
   width: min(100%, 320px);
 }
@@ -701,7 +735,8 @@ button:focus-visible {
   }
 
   .form-submit.is-ready,
-  .loading-icon {
+  .loading-icon,
+  .preview-loading svg {
     animation: none;
   }
 
