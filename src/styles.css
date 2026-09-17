@@ -228,16 +228,23 @@ h1 {
 .school-details-content {
   opacity: 1;
   transform: translateY(0);
+  animation: school-detail-enter 180ms cubic-bezier(0.22, 1, 0.36, 1);
   transition:
     opacity 140ms ease,
     transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.school-details-content.is-out,
-.school-details-content.is-in {
+.school-details-content.is-out {
   opacity: 0;
   pointer-events: none;
   transform: translateY(8px);
+}
+
+@keyframes school-detail-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 
 .school-abbreviation {
@@ -321,6 +328,11 @@ button:focus-visible {
   width: min(100%, 420px);
 }
 
+.editor-preview {
+  position: relative;
+  overflow: hidden;
+}
+
 .editor-preview img,
 .editor-preview canvas,
 .result-preview img {
@@ -336,6 +348,10 @@ button:focus-visible {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.editor-preview.is-loading canvas {
+  filter: grayscale(0.7) brightness(0.42);
 }
 
 .card-form {
@@ -731,6 +747,7 @@ button:focus-visible {
   }
 
   .school-details-content {
+    animation: none;
     transition: none;
   }
 

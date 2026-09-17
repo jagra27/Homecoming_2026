@@ -8,7 +8,7 @@ import {
   STORY_WIDTH,
 } from '../lib/cardRenderer'
 
-function CardCanvas({ school, details, photoUrl, crop, format = 'card', className = '' }) {
+function CardCanvas({ school, details, photoUrl, crop, format = 'card', className = '', onLoadingChange }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -28,14 +28,22 @@ function CardCanvas({ school, details, photoUrl, crop, format = 'card', classNam
       context.drawImage(buffer, 0, 0)
     }
 
-    draw().catch((error) => {
-      if (!cancelled) console.error('Unable to render card preview', error)
-    })
+    onLoadingChange?.(true)
+    draw()
+      .then(() => {
+        if (!cancelled) onLoadingChange?.(false)
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          onLoadingChange?.(false)
+          console.error('Unable to render card preview', error)
+        }
+      })
 
     return () => {
       cancelled = true
     }
-  }, [school, details, photoUrl, crop, format])
+  }, [school, details, photoUrl, crop, format, onLoadingChange])
 
   const isStory = format === 'story'
 

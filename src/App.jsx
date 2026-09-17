@@ -53,6 +53,7 @@ async function copyText(text) {
 function App() {
   const carouselRef = useRef(null)
   const backgroundRefs = useRef([])
+  const scrollEndTimerRef = useRef(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [detailIndex, setDetailIndex] = useState(0)
   const [detailTransition, setDetailTransition] = useState('idle')
@@ -69,9 +70,11 @@ function App() {
   const [saveSurface, setSaveSurface] = useState(null)
   const [shareStatus, setShareStatus] = useState('')
   const [isReviewing, setIsReviewing] = useState(false)
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false)
 
   const showSchool = (index) => {
     const nextIndex = Math.min(Math.max(index, 0), schools.length - 1)
+    window.clearTimeout(scrollEndTimerRef.current)
     carouselRef.current?.children[nextIndex]?.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
@@ -96,7 +99,10 @@ function App() {
       if (background) background.style.opacity = Math.max(0, 1 - Math.abs(index - progress))
     })
     const closestIndex = Math.round(progress)
-    setActiveIndex(closestIndex)
+    window.clearTimeout(scrollEndTimerRef.current)
+    scrollEndTimerRef.current = window.setTimeout(() => {
+      setActiveIndex(closestIndex)
+    }, 120)
   }
 
   const activeSchool = schools[activeIndex]
@@ -116,18 +122,31 @@ function App() {
     setDetailTransition('out')
     const swapTimer = window.setTimeout(() => {
       setDetailIndex(activeIndex)
-      setDetailTransition('in')
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setDetailTransition('idle'))
-      })
+      setDetailTransition('idle')
     }, 140)
 
     return () => window.clearTimeout(swapTimer)
   }, [activeIndex, detailIndex])
 
   useEffect(() => {
+    window.clearTimeout(scrollEndTimerRef.current)
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+
+    if (stage === 'school') {
+      const restoreFrame = window.requestAnimationFrame(() => {
+        const carousel = carouselRef.current
+        const activeSlide = carousel?.children[activeIndex]
+        if (carousel && activeSlide) {
+          carousel.style.scrollBehavior = 'auto'
+          carousel.scrollLeft = activeSlide.offsetLeft - carousel.offsetLeft
+          carousel.style.removeProperty('scroll-behavior')
+        }
+      })
+      return () => window.cancelAnimationFrame(restoreFrame)
+    }
+
+    return undefined
   }, [stage])
 
   useEffect(() => {
@@ -350,7 +369,7 @@ function App() {
                   key={school.id}
                   aria-hidden={index !== activeIndex}
                 >
-                  <img src={school.cardCanvas} alt="" draggable="false" />
+                  <img src={school.cardPreview} alt="" draggable="false" />
                 </article>
               ))}
             </div>
@@ -390,7 +409,10 @@ function App() {
           </div>
 
           <div className="school-details" aria-live="polite" aria-atomic="true">
-            <div className={`school-details-content is-${detailTransition}`}>
+            <div
+              className={`school-details-content is-${detailTransition}`}
+              key={detailSchool.id}
+            >
               <p className="school-abbreviation">{detailSchool.abbreviation}</p>
               <h2>{detailSchool.name}</h2>
               <div className="school-meta">
@@ -419,13 +441,20 @@ function App() {
           </div>
 
           <div className="editor-layout">
-            <div className="editor-preview">
+            <div className={`editor-preview${isPreviewLoading ? ' is-loading' : ''}`}>
               <CardCanvas
                 school={selectedSchool}
                 details={cardDetails}
                 photoUrl={photoUrl}
                 crop={crop}
+                onLoadingChange={setIsPreviewLoading}
               />
+              {isPreviewLoading && (
+                <div className="preview-loading" role="status" aria-live="polite">
+                  <LoaderCircle aria-hidden="true" />
+                  <span>Loading full-quality card</span>
+                </div>
+              )}
             </div>
 
             <form
