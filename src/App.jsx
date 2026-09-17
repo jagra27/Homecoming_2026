@@ -32,6 +32,24 @@ function blobToDataUrl(blob) {
   })
 }
 
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text)
+    return
+  } catch {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.setAttribute('readonly', '')
+    textArea.style.position = 'fixed'
+    textArea.style.opacity = '0'
+    document.body.appendChild(textArea)
+    textArea.select()
+    const copied = document.execCommand('copy')
+    textArea.remove()
+    if (!copied) throw new Error('Unable to copy invitation link')
+  }
+}
+
 function App() {
   const carouselRef = useRef(null)
   const backgroundRefs = useRef([])
@@ -249,24 +267,29 @@ function App() {
   const shareWithFriend = async () => {
     const firstName = cardDetails.firstName.trim() || 'A friend'
     const text = `${firstName} wants you to create your trading card for Homecoming with External Heritage.`
+    const invitation = `${text} ${PUBLIC_APP_URL}`
 
     try {
       if (navigator.share) {
-        await navigator.share({
-          title: 'External Heritage | Homecoming 2026',
-          text,
-          url: PUBLIC_APP_URL,
-        })
-        setShareStatus('Invitation shared.')
-      } else {
-        await navigator.clipboard.writeText(`${text} ${PUBLIC_APP_URL}`)
-        setShareStatus('Invitation link copied.')
+        try {
+          await navigator.share({
+            title: 'External Heritage | Homecoming 2026',
+            text,
+            url: PUBLIC_APP_URL,
+          })
+          setShareStatus('Invitation shared.')
+          return
+        } catch (error) {
+          if (error.name === 'AbortError') return
+          console.warn('Native sharing unavailable; copying invitation instead', error)
+        }
       }
+
+      await copyText(invitation)
+      setShareStatus('Invitation link copied.')
     } catch (error) {
-      if (error.name !== 'AbortError') {
-        console.error('Unable to share invitation', error)
-        setShareStatus('Sharing is unavailable here. Try again from the secure live site.')
-      }
+      console.error('Unable to share invitation', error)
+      setShareStatus(`Copy this link to share: ${PUBLIC_APP_URL}`)
     }
   }
 
